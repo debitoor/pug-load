@@ -45,12 +45,16 @@ load.string = function loadString(src, options) {
   var ast = options.parse(tokens, options);
   return load(ast, options);
 };
-load.file = function loadFile(filename, options) {
+load.file = function loadFile(filename, options, callback) {
   options = assign(getOptions(options), {
     filename: filename
   });
-  var str = options.read(filename);
-  return load.string(str, options);
+  options.read(filename, (err, str) => {
+    if(err){
+      return callback(err);
+    }
+    return callback(null, load.string(str, options))
+  });
 }
 
 load.resolve = function resolve(filename, source, options) {
@@ -65,8 +69,8 @@ load.resolve = function resolve(filename, source, options) {
 
   return filename;
 };
-load.read = function read(filename, options) {
-  return fs.readFileSync(filename, 'utf8');
+load.read = function read(filename, options, callback) {
+  return fs.readFile(filename, 'utf8', callback);
 };
 
 load.validateOptions = function validateOptions(options) {
